@@ -1,0 +1,18 @@
+on: push
+
+jobs:
+  pyright:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract pyright version from pre-commit
+        id: pre-commit-pyright-version
+        run: |
+          cargo install toml2json
+          toml2json poetry.lock \
+            | jq -r '.package[] | select(.name == "pyright") | "pyright-version=" + .version' \
+            >> $GITHUB_OUTPUT
+
+      - uses: jakebailey/pyright-action@v2
+        with:
+          version: ${{ steps.pre-commit-pyright-version.outputs.pyright-version }}
